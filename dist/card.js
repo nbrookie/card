@@ -61,7 +61,7 @@ var card =
 
 	  Card.prototype.initializedDataAttr = "data-jp-card-initialized";
 
-	  Card.prototype.cardTemplate = '' + '<div class="jp-card-container">' + '<div class="jp-card">' + '<div class="jp-card-front">' + '<div class="jp-card-logo jp-card-elo">' + '<div class="e">e</div>' + '<div class="l">l</div>' + '<div class="o">o</div>' + '</div>' + '<div class="jp-card-logo jp-card-visa">Visa</div>' + '<div class="jp-card-logo jp-card-visaelectron">Visa<div class="elec">Electron</div></div>' + '<div class="jp-card-logo jp-card-mastercard">Mastercard</div>' + '<div class="jp-card-logo jp-card-maestro">Maestro</div>' + '<div class="jp-card-logo jp-card-amex"></div>' + '<div class="jp-card-logo jp-card-discover">discover</div>' + '<div class="jp-card-logo jp-card-dinersclub"></div>' + '<div class="jp-card-logo jp-card-dankort"><div class="dk"><div class="d"></div><div class="k"></div></div></div>' + '<div class="jp-card-logo jp-card-jcb">' + '<div class="j">J</div>' + '<div class="c">C</div>' + '<div class="b">B</div>' + '</div>' + '<div class="jp-card-lower">' + '<div class="jp-card-shiny"></div>' + '<div class="jp-card-cvc jp-card-display">{{cvc}}</div>' + '<div class="jp-card-number jp-card-display">{{number}}</div>' + '<div class="jp-card-name jp-card-display">{{name}}</div>' + '<div class="jp-card-expiry jp-card-display" data-before="{{monthYear}}" data-after="{{validDate}}">{{expiry}}</div>' + '</div>' + '</div>' + '<div class="jp-card-back">' + '<div class="jp-card-bar"></div>' + '<div class="jp-card-cvc jp-card-display">{{cvc}}</div>' + '<div class="jp-card-shiny"></div>' + '</div>' + '</div>' + '</div>';
+	  Card.prototype.cardTemplate = '' + '<div class="{{cardContainer}}">' + '<div class="{{card}}">' + '<div class="jp-card-front">' + '<div class="jp-card-logo jp-card-elo">' + '<div class="e">e</div>' + '<div class="l">l</div>' + '<div class="o">o</div>' + '</div>' + '<div class="jp-card-logo jp-card-visa">Visa</div>' + '<div class="jp-card-logo jp-card-visaelectron">Visa<div class="elec">Electron</div></div>' + '<div class="jp-card-logo jp-card-mastercard">Mastercard</div>' + '<div class="jp-card-logo jp-card-maestro">Maestro</div>' + '<div class="jp-card-logo jp-card-amex"></div>' + '<div class="jp-card-logo jp-card-discover">discover</div>' + '<div class="jp-card-logo jp-card-dinersclub"></div>' + '<div class="jp-card-logo jp-card-dankort"><div class="dk"><div class="d"></div><div class="k"></div></div></div>' + '<div class="jp-card-logo jp-card-jcb">' + '<div class="j">J</div>' + '<div class="c">C</div>' + '<div class="b">B</div>' + '</div>' + '<div class="jp-card-lower">' + '<div class="jp-card-shiny"></div>' + '<div class="{{cvcDisplay}} jp-card-display">{{cvc}}</div>' + '<div class="{{numberDisplay}} jp-card-display">{{number}}</div>' + '<div class="{{nameDisplay}} jp-card-display">{{name}}</div>' + '<div class="{{expiryDisplay}} jp-card-display" data-before="{{monthYear}}" data-after="{{validDate}}">{{expiry}}</div>' + '</div>' + '</div>' + '<div class="jp-card-back">' + '<div class="jp-card-bar"></div>' + '<div class="{{cvcDisplay}} jp-card-display">{{cvc}}</div>' + '<div class="jp-card-shiny"></div>' + '</div>' + '</div>' + '</div>';
 
 	  Card.prototype.template = function(tpl, data) {
 	    return tpl.replace(/\{\{(.*?)\}\}/g, function(match, key, str) {
@@ -79,13 +79,13 @@ var card =
 	      cvcInput: 'input[name="cvc"]',
 	      nameInput: 'input[name="name"]'
 	    },
-	    cardSelectors: {
-	      cardContainer: '.jp-card-container',
-	      card: '.jp-card',
-	      numberDisplay: '.jp-card-number',
-	      expiryDisplay: '.jp-card-expiry',
-	      cvcDisplay: '.jp-card-cvc',
-	      nameDisplay: '.jp-card-name'
+	    cardClasses: {
+	      cardContainer: 'jp-card-container',
+	      card: 'jp-card',
+	      numberDisplay: 'jp-card-number',
+	      expiryDisplay: 'jp-card-expiry',
+	      cvcDisplay: 'jp-card-cvc',
+	      nameDisplay: 'jp-card-name'
 	    },
 	    messages: {
 	      validDate: 'valid\nthru',
@@ -109,8 +109,14 @@ var card =
 
 	  function Card(opts) {
 	    this.maskCardNumber = bind(this.maskCardNumber, this);
-	    var toInitialize;
+	    var k, ref, toInitialize, v;
 	    this.options = extend(true, this.defaults, opts);
+	    this.defaults.cardSelectors = {};
+	    ref = this.defaults.cardClasses;
+	    for (k in ref) {
+	      v = ref[k];
+	      this.defaults.cardSelectors[k] = "." + v;
+	    }
 	    if (!this.options.form) {
 	      console.log("Please provide a form");
 	      return;
@@ -133,7 +139,7 @@ var card =
 
 	  Card.prototype.render = function() {
 	    var $cardContainer, baseWidth, name, obj, ref, ref1, selector, ua;
-	    QJ.append(this.$container, this.template(this.cardTemplate, extend({}, this.options.messages, this.options.placeholders)));
+	    QJ.append(this.$container, this.template(this.cardTemplate, extend({}, this.options.messages, this.options.placeholders, this.options.cardClasses)));
 	    ref = this.options.cardSelectors;
 	    for (name in ref) {
 	      selector = ref[name];
@@ -350,7 +356,7 @@ var card =
 	      return QJ.removeClass(out, 'jp-card-focused');
 	    });
 	    QJ.on(el, 'keyup change paste', function(e) {
-	      var elem, filter, i, j, join, k, len, len1, outEl, outVal, ref, results, val;
+	      var elem, filter, i, j, join, l, len, len1, outEl, outVal, ref, results, val;
 	      val = (function() {
 	        var j, len, results;
 	        results = [];
@@ -371,7 +377,7 @@ var card =
 	        val = filter(val, el, out);
 	      }
 	      results = [];
-	      for (i = k = 0, len1 = out.length; k < len1; i = ++k) {
+	      for (i = l = 0, len1 = out.length; l < len1; i = ++l) {
 	        outEl = out[i];
 	        if (opts.fill) {
 	          outVal = val + outDefaults[i].substring(val.length);
@@ -1650,8 +1656,42 @@ var card =
 	 * Port of jQuery.extend that actually works on node.js
 	 */
 	var is = __webpack_require__(9);
+	var has = __webpack_require__(10);
 
-	var extend = function extend() {
+	var defineProperty = Object.defineProperty;
+	var gOPD = Object.getOwnPropertyDescriptor;
+
+	// If name is '__proto__', and Object.defineProperty is available, define __proto__ as an own property on target
+	var setProperty = function setP(target, name, value) {
+	  if (defineProperty && name === '__proto__') {
+	    defineProperty(target, name, {
+	      enumerable: true,
+	      configurable: true,
+	      value: value,
+	      writable: true
+	    });
+	  } else {
+	    target[name] = value;
+	  }
+	};
+
+	// Return undefined instead of __proto__ if '__proto__' is not an own property
+	var getProperty = function getP(obj, name) {
+	  if (name === '__proto__') {
+	    if (!has(obj, name)) {
+	      return void 0;
+	    } else if (gOPD) {
+	      // In early versions of node, obj['__proto__'] is buggy when obj has
+	      // __proto__ as an own property. Object.getOwnPropertyDescriptor() works.
+	      return gOPD(obj, name).value;
+	    }
+	  }
+
+	  return obj[name];
+	};
+
+	// eslint-disable-next-line func-style
+	function extend() {
 	  var target = arguments[0] || {};
 	  var i = 1;
 	  var length = arguments.length;
@@ -1680,8 +1720,8 @@ var card =
 	      }
 	      // Extend the base object
 	      for (name in options) {
-	        src = target[name];
-	        copy = options[name];
+	        src = getProperty(target, name);
+	        copy = getProperty(options, name);
 
 	        // Prevent never-ending loop
 	        if (target === copy) {
@@ -1698,11 +1738,11 @@ var card =
 	          }
 
 	          // Never move original objects, clone them
-	          target[name] = extend(deep, clone, copy);
+	          setProperty(target, name, extend(deep, clone, copy));
 
 	        // Don't bring in undefined values
 	        } else if (typeof copy !== 'undefined') {
-	          target[name] = copy;
+	          setProperty(target, name, copy);
 	        }
 	      }
 	    }
@@ -1710,12 +1750,12 @@ var card =
 
 	  // Return the modified object
 	  return target;
-	};
+	}
 
 	/**
 	 * @public
 	 */
-	extend.version = '1.1.3';
+	extend.version = '1.1.7';
 
 	/**
 	 * Exports module.
@@ -2527,6 +2567,86 @@ var card =
 	};
 
 	module.exports = is;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var bind = __webpack_require__(11);
+
+	module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var implementation = __webpack_require__(12);
+
+	module.exports = Function.prototype.bind || implementation;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	/* eslint no-invalid-this: 1 */
+
+	var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
+	var slice = Array.prototype.slice;
+	var toStr = Object.prototype.toString;
+	var funcType = '[object Function]';
+
+	module.exports = function bind(that) {
+	    var target = this;
+	    if (typeof target !== 'function' || toStr.call(target) !== funcType) {
+	        throw new TypeError(ERROR_MESSAGE + target);
+	    }
+	    var args = slice.call(arguments, 1);
+
+	    var bound;
+	    var binder = function () {
+	        if (this instanceof bound) {
+	            var result = target.apply(
+	                this,
+	                args.concat(slice.call(arguments))
+	            );
+	            if (Object(result) === result) {
+	                return result;
+	            }
+	            return this;
+	        } else {
+	            return target.apply(
+	                that,
+	                args.concat(slice.call(arguments))
+	            );
+	        }
+	    };
+
+	    var boundLength = Math.max(0, target.length - args.length);
+	    var boundArgs = [];
+	    for (var i = 0; i < boundLength; i++) {
+	        boundArgs.push('$' + i);
+	    }
+
+	    bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this,arguments); }')(binder);
+
+	    if (target.prototype) {
+	        var Empty = function Empty() {};
+	        Empty.prototype = target.prototype;
+	        bound.prototype = new Empty();
+	        Empty.prototype = null;
+	    }
+
+	    return bound;
+	};
 
 
 /***/ })

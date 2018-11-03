@@ -7,8 +7,8 @@ extend = require 'node.extend'
 class Card
   initializedDataAttr: "data-jp-card-initialized"
   cardTemplate: '' +
-  '<div class="jp-card-container">' +
-      '<div class="jp-card">' +
+  '<div class="{{cardContainer}}">' +
+      '<div class="{{card}}">' +
           '<div class="jp-card-front">' +
               '<div class="jp-card-logo jp-card-elo">' +
                 '<div class="e">e</div>' +
@@ -30,15 +30,15 @@ class Card
               '</div>' +
               '<div class="jp-card-lower">' +
                   '<div class="jp-card-shiny"></div>' +
-                  '<div class="jp-card-cvc jp-card-display">{{cvc}}</div>' +
-                  '<div class="jp-card-number jp-card-display">{{number}}</div>' +
-                  '<div class="jp-card-name jp-card-display">{{name}}</div>' +
-                  '<div class="jp-card-expiry jp-card-display" data-before="{{monthYear}}" data-after="{{validDate}}">{{expiry}}</div>' +
+                  '<div class="{{cvcDisplay}} jp-card-display">{{cvc}}</div>' +
+                  '<div class="{{numberDisplay}} jp-card-display">{{number}}</div>' +
+                  '<div class="{{nameDisplay}} jp-card-display">{{name}}</div>' +
+                  '<div class="{{expiryDisplay}} jp-card-display" data-before="{{monthYear}}" data-after="{{validDate}}">{{expiry}}</div>' +
               '</div>' +
           '</div>' +
           '<div class="jp-card-back">' +
               '<div class="jp-card-bar"></div>' +
-              '<div class="jp-card-cvc jp-card-display">{{cvc}}</div>' +
+              '<div class="{{cvcDisplay}} jp-card-display">{{cvc}}</div>' +
               '<div class="jp-card-shiny"></div>' +
           '</div>' +
       '</div>' +
@@ -67,13 +67,13 @@ class Card
       expiryInput: 'input[name="expiry"]'
       cvcInput: 'input[name="cvc"]'
       nameInput: 'input[name="name"]'
-    cardSelectors:
-      cardContainer: '.jp-card-container'
-      card: '.jp-card'
-      numberDisplay: '.jp-card-number'
-      expiryDisplay: '.jp-card-expiry'
-      cvcDisplay: '.jp-card-cvc'
-      nameDisplay: '.jp-card-name'
+    cardClasses:
+      cardContainer: 'jp-card-container'
+      card: 'jp-card'
+      numberDisplay: 'jp-card-number'
+      expiryDisplay: 'jp-card-expiry'
+      cvcDisplay: 'jp-card-cvc'
+      nameDisplay: 'jp-card-name'
     messages:
       validDate: 'valid\nthru'
       monthYear: 'month/year'
@@ -91,6 +91,10 @@ class Card
 
   constructor: (opts) ->
     @options = extend(true, @defaults, opts)
+
+    @defaults.cardSelectors = {}
+    for k, v of @defaults.cardClasses
+      @defaults.cardSelectors[k] = ".#{v}"
 
     unless @options.form
       console.log "Please provide a form"
@@ -117,7 +121,7 @@ class Card
   render: ->
     QJ.append(@$container, @template(
       @cardTemplate,
-      extend({}, @options.messages, @options.placeholders)
+      extend({}, @options.messages, @options.placeholders, @options.cardClasses)
     ))
 
     for name, selector of @options.cardSelectors
